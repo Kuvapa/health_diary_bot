@@ -10,7 +10,11 @@ from sqlalchemy import select
 
 router = Router()
 
-allowed_cmd = ['Да', 'Нет']
+
+allowed_cmd = [
+    'Да',
+    'Нет'
+]
 
 
 class RecordForm(StatesGroup):
@@ -38,6 +42,28 @@ async def confirm_set_pressure(message: Message, state: FSMContext):
     )
 
 
+@router.message(
+    ~F.text.in_(allowed_cmd),
+    RecordForm.GET_PRESSURE_CONF
+)
+async def wrong_cmd(message: Message):
+    await message.answer(
+        'Пожалуйста, нажми на кнопочку',
+        reply_markup=nav.chooseMenu
+    )
+
+
+@router.message(
+    ~F.text.in_(allowed_cmd),
+    RecordForm.GET_HEADACHE
+)
+async def wrong_cmd(message: Message):
+    await message.answer(
+        'Пожалуйста, нажми на кнопочку',
+        reply_markup=nav.chooseMenu
+    )
+
+
 @router.message(F.text == 'Нет')
 async def cancel_record(message: Message, state: FSMContext):
     current_state = await state.get_state()
@@ -51,17 +77,9 @@ async def cancel_record(message: Message, state: FSMContext):
 
 
 @router.message(
-    RecordForm.GET_HEADACHE,
     RecordForm.GET_PRESSURE_CONF,
-    ~F.text.in_(allowed_cmd)
+    F.text == 'Да'
 )
-async def wrong_cmd(message: Message):
-    await message.answer(
-        'Пожалуйста, нажми на кнопочку',
-    )
-
-
-@router.message(RecordForm.GET_PRESSURE_CONF)
 async def set_pressure(message: Message, state: FSMContext):
     await state.update_data(GET_PRESSURE_CONF=True)
     await state.set_state(RecordForm.GET_PRESSURE)
@@ -86,7 +104,10 @@ async def wrong_pressure_format(message: Message):
     await message.answer('Указан неверный формат давления')
 
 
-@router.message(RecordForm.GET_HEADACHE)
+@router.message(
+    RecordForm.GET_HEADACHE,
+    F.text == 'Да'
+)
 async def get_drugs_headache(message: Message, state: FSMContext):
     await state.update_data(GET_HEADACHE=message.text)
     await state.set_state(RecordForm.GET_DRUGS)

@@ -15,7 +15,9 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from config import DB_URL
 from middlewares.db import DbSessionMiddleware
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+scheduler = AsyncIOScheduler(timezone='Europe/Moscow')
 TOKEN = config.TOKEN
 
 
@@ -29,15 +31,17 @@ async def main():
     async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
     bot = Bot(token=TOKEN, parse_mode=ParseMode.HTML)
+    scheduler.start()
 
     dp = Dispatcher(storage=MemoryStorage())
     dp.update.middleware(DbSessionMiddleware(session_pool=async_session_maker))
+
     dp.include_router(handlers.start_handler.router)
+    dp.include_router(handlers.get_history_handler.router)
     dp.include_router(handlers.change_mode_handler.router)
     dp.include_router(handlers.change_time_handler.router)
     dp.include_router(handlers.change_push_mode_handler.router)
     dp.include_router(handlers.set_record_handler.router)
-    dp.include_router(handlers.get_history_handler.router)
     dp.include_router(handlers.menu_handler.router)
 
     await bot.delete_webhook(drop_pending_updates=True)

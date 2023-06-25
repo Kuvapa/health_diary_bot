@@ -8,7 +8,7 @@ import utils.keyboard as nav
 from utils.text import (start_message, start_message2, wrong_cmd, start_message3,
                         time_1, set_time1, time_2, set_time2, wrong_time_format, equal_time,
                         end_start_handler)
-from db.base import add_to_db
+from db.db_methods import add_to_db
 from filters.filter import StateValueFilter
 import time
 

@@ -20,17 +20,19 @@ class PushModeValueFilter(BaseFilter):
         self.push_value = push_value
 
     async def __call__(self, message: Message, session: AsyncSession) -> bool:
-        user = await session.execute(
-            select(
-                User.telegram_id,
-                User.push_mode_1,
-                User.push_mode_2
-            ).where(User.telegram_id == message.from_user.id))
-        if user:
-            row = user.fetchone()
-            push_mode_1 = row[1]
-            push_mode_2 = row[2]
-            if push_mode_1 and not push_mode_2:
-                return True
-            else:
+        if message.text == 'Изменить время оповещения':
+            user = await session.execute(
+                select(
+                    User.telegram_id,
+                    User.push_mode_1,
+                    User.push_mode_2
+                ).where(User.telegram_id == message.from_user.id))
+            if user is not None:
+                row = user.fetchone()
+                push_mode_1 = row[1]
+                push_mode_2 = row[2]
+                print(f"push_mode_1: {push_mode_1}, push_mode_2: {push_mode_2}")
+                if push_mode_1 and not push_mode_2:
+                    return True
                 return False
+        return False

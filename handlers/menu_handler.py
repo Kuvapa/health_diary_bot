@@ -23,7 +23,7 @@ allowed_cmd = [
 ]
 
 
-@router.message(~F.text.in_(allowed_cmd))
+@router.message(~(F.text.in_(allowed_cmd)))
 async def unknown_cmd(message: types.Message):
     """If not pressed menu button"""
     await message.reply(

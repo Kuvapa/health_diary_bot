@@ -13,7 +13,8 @@ router = Router()
 
 
 class TimeForm(StatesGroup):
-    GET_TIME = State()
+    GET_TIME1 = State()
+    GET_TIME2 = State()
     CHECK_TIME = State()
 
 
@@ -22,7 +23,7 @@ class TimeForm(StatesGroup):
     F.text == 'Изменить время оповещения',
 )
 async def set_time1(message: Message, state: FSMContext):
-    await state.set_state(TimeForm.GET_TIME)
+    await state.set_state(TimeForm.GET_TIME1)
     await message.answer(
         utils.text.set_time1,
         reply_markup=ReplyKeyboardRemove()
@@ -34,7 +35,7 @@ async def set_time1(message: Message, state: FSMContext):
     F.text == 'Изменить время оповещения',
 )
 async def set_time2(message: Message, state: FSMContext):
-    await state.set_state(TimeForm.GET_TIME)
+    await state.set_state(TimeForm.GET_TIME2)
     await message.answer(
         utils.text.set_time2,
         reply_markup=ReplyKeyboardRemove()
@@ -42,38 +43,34 @@ async def set_time2(message: Message, state: FSMContext):
 
 
 @router.message(
-    TimeForm.GET_TIME,
-    PushModeValueFilter(True),
+    TimeForm.GET_TIME1,
     F.text.regexp(r"^(?:[01]\d|2[0-3]):[0-5]\d$")
 )
-async def check_time1(message: Message, state: FSMContext, session: AsyncSession,):
+async def check_time1(message: Message, state: FSMContext, session: AsyncSession):
     await state.update_data(GET_TIME=message.text)
     await state.set_state(TimeForm.CHECK_TIME)
     await confirm_time1(message, state, session)
 
 
 @router.message(
-    TimeForm.GET_TIME,
-    ~PushModeValueFilter(True),
+    TimeForm.GET_TIME2,
     F.text.regexp(r"^(?!.*(\d{2}:\d{2}),\s*\1)(?:[01]\d|2[0-3]):[0-5]\d, (?:[01]\d|2[0-3]):[0-5]\d$")
 )
-async def check_time2(message: Message, state: FSMContext, session: AsyncSession,):
+async def check_time2(message: Message, state: FSMContext, session: AsyncSession):
     await state.update_data(GET_TIME=message.text)
     await state.set_state(TimeForm.CHECK_TIME)
     await confirm_time2(message, state, session)
 
 
 @router.message(
-    TimeForm.GET_TIME,
-    PushModeValueFilter(True),
+    TimeForm.GET_TIME1,
 )
 async def wrong_time1(message: Message):
     await message.answer(utils.text.wrong_time_format)
 
 
 @router.message(
-    TimeForm.GET_TIME,
-    ~PushModeValueFilter(True),
+    TimeForm.GET_TIME2,
 )
 async def wrong_time2(message: Message):
     input_str = message.text.strip()
