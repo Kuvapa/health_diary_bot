@@ -1,4 +1,4 @@
-from aiogram import types, Router, F
+from aiogram import F, Router, types
 
 import utils.keyboard as nav
 import utils.text

@@ -1,7 +1,8 @@
-from aiogram import types, Router, F
+from aiogram import F, Router, types
 from sqlalchemy.ext.asyncio import AsyncSession
-import utils.text
+
 import utils.keyboard as nav
+import utils.text
 from db.base import User
 
 router = Router()

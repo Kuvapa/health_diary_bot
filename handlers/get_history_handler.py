@@ -1,10 +1,12 @@
-from aiogram import Router, F
-from sqlalchemy.ext.asyncio import AsyncSession
-from aiogram.types import Message
-import utils.keyboard as nav
 from datetime import date, timedelta
-from db.base import User, HealthDiary
+
+from aiogram import F, Router
+from aiogram.types import Message
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+import utils.keyboard as nav
+from db.base import HealthDiary, User
 
 router = Router()
 

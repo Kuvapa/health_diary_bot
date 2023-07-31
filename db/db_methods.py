@@ -1,9 +1,10 @@
-from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import date, datetime
+
 from aiogram.types import Message
-from db.base import User, HealthDiary
 from sqlalchemy import select
-from datetime import datetime
-from datetime import date
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from db.base import HealthDiary, User
 
 
 async def add_to_db(telegram_id, data, session):

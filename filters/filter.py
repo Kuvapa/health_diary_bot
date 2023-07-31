@@ -1,9 +1,10 @@
 from aiogram.filters import BaseFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from sqlalchemy.ext.asyncio import AsyncSession
-from db.base import User
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from db.base import User
 
 
 class StateValueFilter(BaseFilter):

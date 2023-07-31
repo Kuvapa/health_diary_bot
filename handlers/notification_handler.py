@@ -1,16 +1,18 @@
-from aiogram import Router, F
+from datetime import datetime
+
+import pytz
+from aiogram import F, Router
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
-from sqlalchemy.ext.asyncio import AsyncSession
+from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message, ReplyKeyboardRemove
-import utils.keyboard as nav
-from db.db_methods import get_mode, add_by_notification
 from sqlalchemy import select
-from db.base import User
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from sqlalchemy.ext.asyncio import AsyncSession
 
-scheduler = AsyncIOScheduler()
+import utils.keyboard as nav
+from db.base import User
+from db.db_methods import add_by_notification, get_mode
+
 router = Router()
 
 
@@ -20,17 +22,6 @@ class NotificationForm(StatesGroup):
     SET_BOTH = State()
     SET_BOTH_BLOOD = State()
     SET_DRUGS = State()
-
-
-async def get_push(message: Message, session: AsyncSession):
-    user_push = await session.execute(
-        select(
-            User.telegram_id,
-            User.push_mode_1,
-            User.push_mode_2
-        ).where(User.telegram_id == message.from_user.id))
-    user_push_scalar = user_push.fetchone()
-    return user_push_scalar
 
 
 @router.message()
@@ -46,45 +37,6 @@ async def star_of_notification(
         await record_blood(message, state)
     else:
         await record_both(message, state)
-
-
-async def get_time(telegram_id, data, session: AsyncSession, message: Message):
-    user_push = await get_push(message, session)
-    if user_push.push_mode_1 is True:
-        user_time = await session.execute(
-            select(
-                User.telegram_id,
-                User.one_time_push
-            ).where(User.telegram_id == message.from_user.id)
-        )
-        user_time_scalar = user_time.scalar()
-        scheduler.add_job(
-            star_of_notification,
-            'date',
-            run_date=user_time_scalar,
-            args=[telegram_id, data, session]
-        )
-    else:
-        user_time = await session.execute(
-            select(
-                User.telegram_id,
-                User.first_time_push,
-                User.second_time_push
-            ).where(User.telegram_id == message.from_user.id)
-        )
-        user_time_scalar = user_time.fetchone()
-        scheduler.add_job(
-            star_of_notification,
-            'date',
-            run_date=user_time_scalar[0],
-            args=[telegram_id, data, session]
-        )
-        scheduler.add_job(
-            star_of_notification,
-            'date',
-            run_date=user_time_scalar[1],
-            args=[telegram_id, data, session]
-        )
 
 
 async def record_headache(message: Message, state: FSMContext):
@@ -189,4 +141,33 @@ async def end_of_notification(
     await add_by_notification(telegram_id, data, session)
     await session.commit()
     await state.clear()
-    await get_time(telegram_id, data, session)
+
+
+async def time_for_push(
+        message: Message,
+        state: FSMContext,
+        session: AsyncSession
+):
+    telegram_id = message.from_user.id
+
+    user_push_mode = await session.execute(
+        select(
+            User.telegram_id,
+            User.push_mode_1,
+            User.push_mode_2,
+            User.one_time_push,
+            User.first_time_push,
+            User.second_time_push,
+        ).where(User.telegram_id == telegram_id)
+    )
+
+    user_mode = user_push_mode.fetchone()
+    timezone = pytz.timezone('Europe/Moscow')
+
+    if user_mode.push_mode_1:
+        if user_mode.one_time_push == datetime.now(timezone).strftime("%H:%M"):
+            await star_of_notification(message, session, state)
+    else:
+        if (user_mode.first_time_push or user_mode.second_time_push) \
+                == datetime.now(timezone).strftime("%H:%M"):
+            await star_of_notification(message, session, state)

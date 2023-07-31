@@ -1,13 +1,15 @@
-from aiogram import types, Router, F
+from datetime import datetime
+
+from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
-from sqlalchemy.ext.asyncio import AsyncSession
+from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardRemove
+from sqlalchemy.ext.asyncio import AsyncSession
+
 import utils.keyboard as nav
 import utils.text
-from filters.filter import StateValueFilter
-from datetime import datetime
 from db.base import User
+from filters.filter import StateValueFilter
 
 router = Router()
 

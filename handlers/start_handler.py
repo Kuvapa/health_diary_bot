@@ -1,16 +1,18 @@
-from aiogram import Router, F
+import time
+
+from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import Message, ReplyKeyboardRemove
 from sqlalchemy.ext.asyncio import AsyncSession
-from aiogram.types import ReplyKeyboardRemove, Message
+
 import utils.keyboard as nav
-from utils.text import (start_message, start_message2, wrong_cmd, start_message3,
-                        time_1, set_time1, time_2, set_time2, wrong_time_format, equal_time,
-                        end_start_handler)
 from db.db_methods import add_to_db
 from filters.filter import StateValueFilter
-import time
+from utils.text import (end_start_handler, equal_time, set_time1, set_time2,
+                        start_message, start_message2, start_message3, time_1,
+                        time_2, wrong_cmd, wrong_time_format)
 
 router = Router()
 
